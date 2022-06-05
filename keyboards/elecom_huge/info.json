@@ -1,0 +1,26 @@
+{
+    "manufacturer": "Elecom",
+    "keyboard_name": "elecom_huge",
+    "maintainer": "Somgo",
+	"matrix_pins": {
+		direct: [
+			["D0", "C6", "D7", "E6", "B4", "B5", "F7", "F6", "F5", "F4"]
+		]
+    },
+    "layouts": {
+        "LAYOUT": {
+            "layout": [
+                {"x":1, "y":0},
+                {"x":1, "y":-1},
+                {"x":0, "y":0},
+				{"x":3, "y":0},
+                {"x":1, "y":1},
+                {"x":5, "y":0},
+				{"x":6, "y":0},
+                {"x":7, "y":0.25},
+                {"x":8, "y":0},
+				{"x":9, "y":0}
+            ]
+        }
+    }
+}

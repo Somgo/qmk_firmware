@@ -98,9 +98,17 @@ const pointing_device_driver_t pointing_device_driver = {
 // clang-format on
 #elif defined(POINTING_DEVICE_DRIVER_cirque_pinnacle_i2c) || defined(POINTING_DEVICE_DRIVER_cirque_pinnacle_spi)
 #    ifndef CIRQUE_PINNACLE_TAPPING_TERM
-#        include "action.h"
-#        include "action_tapping.h"
-#        define CIRQUE_PINNACLE_TAPPING_TERM GET_TAPPING_TERM(KC_BTN1, &(keyrecord_t){})
+#        ifdef TAPPING_TERM_PER_KEY
+#            include "action.h"
+#            include "action_tapping.h"
+#            define CIRQUE_PINNACLE_TAPPING_TERM get_tapping_term(KC_BTN1, &(keyrecord_t){})
+#        else
+#            ifdef TAPPING_TERM
+#                define CIRQUE_PINNACLE_TAPPING_TERM TAPPING_TERM
+#            else
+#                define CIRQUE_PINNACLE_TAPPING_TERM 200
+#            endif
+#        endif
 #    endif
 #    ifndef CIRQUE_PINNACLE_TOUCH_DEBOUNCE
 #        define CIRQUE_PINNACLE_TOUCH_DEBOUNCE (CIRQUE_PINNACLE_TAPPING_TERM * 8)
@@ -200,11 +208,11 @@ const pointing_device_driver_t pointing_device_driver = {
 // clang-format on
 #elif defined(POINTING_DEVICE_DRIVER_pmw3360)
 static void pmw3360_device_init(void) {
-    pmw3360_init(0);
+    pmw3360_init();
 }
 
 report_mouse_t pmw3360_get_report(report_mouse_t mouse_report) {
-    report_pmw3360_t data        = pmw3360_read_burst(0);
+    report_pmw3360_t data        = pmw3360_read_burst();
     static uint16_t  MotionStart = 0; // Timer for accel, 0 is resting state
 
     if (data.isOnSurface && data.isMotion) {
@@ -235,6 +243,46 @@ const pointing_device_driver_t pointing_device_driver = {
     .set_cpi    = pmw3360_set_cpi,
     .get_cpi    = pmw3360_get_cpi
 };
+
+// clang-format on
+#elif defined(POINTING_DEVICE_DRIVER_pmw3320)
+static void pmw3320_device_init(void) {
+    pmw3320_init();
+}
+
+report_mouse_t pmw3320_get_report(report_mouse_t mouse_report) {
+    report_pmw3320_t data        = pmw3320_read_burst();
+    static uint16_t  MotionStart = 0; // Timer for accel, 0 is resting state
+
+    if (data.isOnSurface && data.isMotion) {
+        // Reset timer if stopped moving
+        if (!data.isMotion) {
+            if (MotionStart != 0) MotionStart = 0;
+            return mouse_report;
+        }
+
+        // Set timer if new motion
+        if ((MotionStart == 0) && data.isMotion) {
+#    ifdef CONSOLE_ENABLE
+            if (debug_mouse) dprintf("Starting motion.\n");
+#    endif
+            MotionStart = timer_read();
+        }
+        mouse_report.x = data.dx;
+        mouse_report.y = data.dy;
+	}
+
+    return mouse_report;
+}
+
+// clang-format off
+const pointing_device_driver_t pointing_device_driver = {
+    .init       = pmw3320_device_init,
+    .get_report = pmw3320_get_report,
+    .set_cpi    = pmw3320_set_cpi,
+    .get_cpi    = pmw3320_get_cpi
+};
+
 // clang-format on
 #elif defined(POINTING_DEVICE_DRIVER_pmw3389)
 static void pmw3389_device_init(void) {
@@ -273,6 +321,7 @@ const pointing_device_driver_t pointing_device_driver = {
     .set_cpi    = pmw3389_set_cpi,
     .get_cpi    = pmw3389_get_cpi
 };
+
 // clang-format on
 #else
 __attribute__((weak)) void           pointing_device_driver_init(void) {}
