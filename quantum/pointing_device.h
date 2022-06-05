@@ -50,6 +50,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #elif defined(POINTING_DEVICE_DRIVER_pmw3389)
 #    include "spi_master.h"
 #    include "drivers/sensors/pmw3389.h"
+#elif defined(POINTING_DEVICE_DRIVER_pmw3320)
+#    include "spi_master.h"
+#    include "drivers/sensors/pmw3320.h"
 #else
 void           pointing_device_driver_init(void);
 report_mouse_t pointing_device_driver_get_report(report_mouse_t mouse_report);
